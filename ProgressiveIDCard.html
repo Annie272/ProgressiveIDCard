@@ -95,8 +95,13 @@
       <input type="hidden" name="status" value="New" />
       <input type="hidden" name="phone" value="28436836129" />
       <input type="hidden" name="lead_source" value="Web Form" />
-      <input type="hidden" name="delete_Action_Form__c" value="1" />
-      <input type="hidden" name="Carrier__c" value ="Progressive">
+      <input type="hidden" id="formDataJson" name="Form_Captured_Data__c" value="" />
+      <input type="hidden" id="missingFormData" name="Form_Missing_Data__c" value="" />
+      <input type="hidden" name="company" value="Caelius Test Safeco New" />
+    <input type="hidden" name="debugEmail"  value="annie.rawal@caeliusconsulting.com">
+          <input type="hidden" name="delete_Action_Form__c" value="1" />
+                    <input type="hidden" name="Carrier__c" value ="Progressive">
+
 
       <input
         type="hidden"
@@ -152,75 +157,108 @@
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const form = document.getElementById("mainForm");
-        const reviewBtn = document.getElementById("reviewBtn");
-        const dialog = document.getElementById("dialog");
-        const dialogTitle = document.getElementById("dialogTitle");
-        const missingFieldsList = document.getElementById("missingFieldsList");
-        const proceedBtn = document.getElementById("proceedBtn");
-        const editBtn = document.getElementById("editBtn");
+  document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("mainForm");
+  const reviewBtn = document.getElementById("reviewBtn");
+  const dialog = document.getElementById("dialog");
+  const dialogTitle = document.getElementById("dialogTitle");
+  const missingFieldsList = document.getElementById("missingFieldsList");
+  const proceedBtn = document.getElementById("proceedBtn");
+  const editBtn = document.getElementById("editBtn");
 
-        // Only validate Email + Policy Number (Policy Action is hidden and always "ID Card")
-        const fieldData = [
-          { id: "email", label: "Email", type: "email" },
-          { id: "00NU7000005zuX3", label: "Policy Number" },
-        ];
+  // Define fields to validate and capture
+  const fieldData = [
+    { id: "email", label: "Email", type: "email" },
+    { id: "00NU7000005zuX3", label: "Policy Number" }
+  ];
 
-        function validateFields() {
-          const missing = [];
-          fieldData.forEach((field) => {
-            const input = document.getElementById(field.id);
-            if (field.type === "email") {
-              if (!input.value.trim() || !input.checkValidity()) {
-                missing.push(field.label);
-              }
-            } else {
-              if (!input.value.trim()) {
-                missing.push(field.label);
-              }
-            }
-          });
-          return missing;
+  let formDataJsonInput = document.getElementById("formDataJson");
+  if (!formDataJsonInput) {
+    formDataJsonInput = document.createElement("input");
+    formDataJsonInput.type = "hidden";
+    formDataJsonInput.id = "formDataJson";
+    formDataJsonInput.name = "Form_Captured_Data__c";
+    form.appendChild(formDataJsonInput);
+  }
+
+  let missingFormDataInput = document.getElementById("missingFormData");
+  if (!missingFormDataInput) {
+    missingFormDataInput = document.createElement("input");
+    missingFormDataInput.type = "hidden";
+    missingFormDataInput.id = "missingFormData";
+    missingFormDataInput.name = "Form_Missing_Data__c";
+    form.appendChild(missingFormDataInput);
+  }
+
+  // Validate required fields
+  function validateFields() {
+    const missing = [];
+    fieldData.forEach((field) => {
+      const input = document.getElementById(field.id);
+      if (field.type === "email") {
+        if (!input.value.trim() || !input.checkValidity()) {
+          missing.push(field.label);
         }
+      } else {
+        if (!input.value.trim()) {
+          missing.push(field.label);
+        }
+      }
+    });
+    return missing;
+  }
 
-        reviewBtn.addEventListener("click", () => {
-          const missing = validateFields();
-          if (missing.length) {
-            dialogTitle.textContent =
-              "Below Mandatory Fields are missing and the Team will contact you shortly.";
-            missingFieldsList.innerHTML = missing
-              .map((f) => `<li>${f}</li>`)
-              .join("");
-          } else {
-            dialogTitle.textContent =
-              "All mandatory fields are completed. Ready to submit your request?";
-            missingFieldsList.innerHTML = "";
-          }
-          dialog.classList.remove("hidden");
-        });
+  // Main logic for review button
+  reviewBtn.addEventListener("click", () => {
+    const missing = validateFields();
 
-        editBtn.addEventListener("click", () => {
-          dialog.classList.add("hidden");
-        });
+    const completedData = [];
+    fieldData.forEach(field => {
+      const input = document.getElementById(field.id);
+      const value = input.value.trim();
+      if (!missing.includes(field.label) && value) {
+        completedData.push(`${field.label} = ${value}`);
+      }
+    });
 
-        proceedBtn.addEventListener("click", () => {
-          dialog.classList.add("hidden");
-          form.submit();
-        });
+    // Store completed data (field = value, line by line) in form captured data
+    formDataJsonInput.value = completedData.join('\n');
 
-        window.addEventListener("click", (e) => {
-          if (e.target === dialog) {
-            dialog.classList.add("hidden");
-          }
-        });
+    // Store missing fields, one per line
+    missingFormDataInput.value = missing.join('\n');
 
-        window.addEventListener("keydown", (e) => {
-          if (e.key === "Escape" && !dialog.classList.contains("hidden")) {
-            dialog.classList.add("hidden");
-          }
-        });
-      });
+    if (missing.length) {
+      dialogTitle.textContent = "Below Mandatory Fields are missing and the Team will contact you shortly.";
+      missingFieldsList.innerHTML = missing.map(f => `<li>${f}</li>`).join("");
+    } else {
+      dialogTitle.textContent = "All mandatory fields are completed. Ready to submit your request?";
+      missingFieldsList.innerHTML = "";
+    }
+
+    dialog.classList.remove("hidden");
+  });
+
+  editBtn.addEventListener("click", () => {
+    dialog.classList.add("hidden");
+  });
+
+  proceedBtn.addEventListener("click", () => {
+    dialog.classList.add("hidden");
+    form.submit();
+  });
+
+  window.addEventListener("click", (e) => {
+    if (e.target === dialog) {
+      dialog.classList.add("hidden");
+    }
+  });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !dialog.classList.contains("hidden")) {
+      dialog.classList.add("hidden");
+    }
+  });
+});
+
     </script>
   </body>
 </html>

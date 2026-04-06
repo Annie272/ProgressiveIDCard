@@ -75,7 +75,7 @@
 
       <!-- Hidden Salesforce fields -->
       <input type="hidden" name="oid" value="00DU7000006EuID" />
-    <!--  <input
+     <!-- <input
         type="hidden"
         name="recordType"
         id="recordType"
@@ -101,6 +101,8 @@
     <input type="hidden" name="debugEmail"  value="annie.rawal@caeliusconsulting.com">
           <input type="hidden" name="delete_Action_Form__c" value="1" />
                     <input type="hidden" name="Carrier__c" value ="Progressive">
+                    <input type="hidden" id="allFormData" name="All_Form_Data__c" value="" />
+                   
 
 
       <input
@@ -226,6 +228,17 @@
 
     // Store missing fields, one per line
     missingFormDataInput.value = missing.join('\n');
+    // Build and store all form data JSON
+const allFormData = {
+  Email: document.getElementById("email")?.value || "",
+  Policy_Number: document.getElementById("00NU7000005zuX3")?.value || "",
+
+  // Hidden fields
+  Carrier: document.querySelector('input[name="Carrier__c"]')?.value || "Progressive",
+  Policy_Action: document.getElementById("00NU7000005zuNN")?.value || "ID Card"
+};
+
+document.getElementById("allFormData").value = JSON.stringify(allFormData);
 
     if (missing.length) {
       dialogTitle.textContent = "Below Mandatory Fields are missing and the Team will contact you shortly.";
